@@ -201,8 +201,38 @@ export default {
       vm.masterSpeed.forEach(function(object) {
         vm.allPathWithStroke[object.color] = [];
       });
+      
+      // Set marker for last location
+      vm.setMarker();
 
       vm.plot(vm.limit, 0);
+    },
+    async setMarker() {
+      let vm = this;
+
+      let { data } = await axios.get(`/gps-tracker/get-last-location/${ vm.$route.params.id }`)
+
+      // Add a marker for the last location
+      if (data.lat && data.lng) {
+        let lat = parseFloat(data.lat);
+        let lng = parseFloat(data.lng);
+
+        let latLng = new google.maps.LatLng(lat, lng);
+
+        var marker = new google.maps.Marker({
+            position: latLng
+        });
+
+        vm.map.setCenter({
+          lat: lat,
+          lng: lng
+        });
+
+        // To add the marker to the map, call setMap();
+        marker.setMap(vm.map);
+
+        vm.hasMapCentered = true;
+      }
     },
     async plot(limit, offset) {
       let vm = this;
